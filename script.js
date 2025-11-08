@@ -13,9 +13,10 @@ const firebaseConfig = {
 
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
-const storage = firebase.storage();
 
 let username = "";
+const userColors = {};
+const colorClasses = ['user-color-0','user-color-1','user-color-2','user-color-3','user-color-4'];
 
 function login() {
   username = document.getElementById("username").value.trim();
@@ -24,90 +25,51 @@ function login() {
   document.getElementById("chat-screen").style.display = "block";
 }
 
-async function sendMessage() {
-  const msgEl = document.getElementById("messageInput");
-  const fileEl = document.getElementById("imageInput");
-  const msg = msgEl.value.trim();
-  const file = fileEl.files[0];
-
-  if (!msg && !file) return;
+function sendMessage() {
+  const msg = document.getElementById("messageInput").value.trim();
+  if (msg === "") return;
 
   if (username.toLowerCase() === "eymen" && msg.toLowerCase() === "clear") {
-    if (!confirm('Tüm mesajlar ve resimler silinecek. Emin misin?')) return;
-
-    const snapshot = await db.ref('messages').once('value');
-    const deletes = [];
-    snapshot.forEach(child => {
-      const val = child.val();
-      if (val && val.storagePath) deletes.push(storage.ref(val.storagePath).delete().catch(()=>{}));
-    });
-    await Promise.all(deletes);
-    await db.ref('messages').remove();
-
-    document.getElementById('messages').innerHTML = '';
-    msgEl.value = '';
-    fileEl.value = '';
+    db.ref("messages").remove();
+    document.getElementById("messages").innerHTML = "";
+    document.getElementById("messageInput").value = "";
     return;
   }
 
-  let imageUrl = null;
-  let storagePath = null;
-  if (file) {
-    const timestamp = Date.now();
-    const safeName = file.name.replace(/[^a-zA-Z0-9.\-_]/g, '_');
-    storagePath = `images/${timestamp}_${safeName}`;
-    const ref = storage.ref(storagePath);
-    const snapshot = await ref.put(file);
-    imageUrl = await snapshot.ref.getDownloadURL();
-  }
-
-  db.ref('messages').push({
+  db.ref("messages").push({
     user: username,
-    text: msg || null,
-    imageUrl: imageUrl || null,
-    storagePath: storagePath || null,
-    timestamp: Date.now()
+    text: msg
   });
-
-  msgEl.value = '';
-  fileEl.value = '';
+  document.getElementById("messageInput").value = "";
 }
 
-db.ref('messages').on('child_added', (snapshot) => {
+db.ref("messages").on("child_added", (snapshot) => {
   const data = snapshot.val();
-  const msgDiv = document.createElement('div');
+  const msgDiv = document.createElement("div");
   msgDiv.className = 'message';
 
-  const meta = document.createElement('div');
-  meta.className = 'meta';
-  const when = data.timestamp ? new Date(data.timestamp).toLocaleString() : '';
-  meta.textContent = `${data.user}${when ? ' — ' + when : ''}`;
-  msgDiv.appendChild(meta);
-
-  if (data.text) {
-    const text = document.createElement('div');
-    text.className = 'text';
-    text.textContent = data.text;
-    msgDiv.appendChild(text);
+  if(!userColors[data.user]) {
+    const colorIndex = Object.keys(userColors).length % colorClasses.length;
+    userColors[data.user] = colorClasses[colorIndex];
   }
+  msgDiv.classList.add(userColors[data.user]);
 
-  if (data.imageUrl) {
-    const a = document.createElement('a');
-    a.href = data.imageUrl;
-    a.target = '_blank';
-    const img = document.createElement('img');
-    img.src = data.imageUrl;
-    img.alt = 'Gönderilen resim';
-    a.appendChild(img);
-    msgDiv.appendChild(a);
-  }
+  const userSpan = document.createElement("span");
+  userSpan.className = "user";
+  userSpan.textContent = data.user;
+  msgDiv.appendChild(userSpan);
 
-  document.getElementById('messages').appendChild(msgDiv);
-  document.getElementById('messages').scrollTop = document.getElementById('messages').scrollHeight;
+  const textDiv = document.createElement("div");
+  textDiv.className = "text";
+  textDiv.textContent = data.text;
+  msgDiv.appendChild(textDiv);
+
+  document.getElementById("messages").appendChild(msgDiv);
+  document.getElementById("messages").scrollTop = document.getElementById("messages").scrollHeight;
 });
 
-db.ref('messages').on('value', (snapshot) => {
+db.ref("messages").on("value", (snapshot) => {
   if (!snapshot.exists()) {
-    document.getElementById('messages').innerHTML = '';
+    document.getElementById("messages").innerHTML = "";
   }
 });
