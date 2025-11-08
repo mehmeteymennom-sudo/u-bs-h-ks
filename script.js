@@ -16,25 +16,44 @@ const db = firebase.database();
 let username = "";
 
 function login() {
-  username = document.getElementById("username").value;
+  username = document.getElementById("username").value.trim();
   if (!username) return alert("Kullanıcı adı gir!");
   document.getElementById("login-screen").style.display = "none";
   document.getElementById("chat-screen").style.display = "block";
 }
 
 function sendMessage() {
-  const msg = document.getElementById("messageInput").value;
-  if (msg.trim() === "") return;
+  const msg = document.getElementById("messageInput").value.trim();
+  if (msg === "") return;
+
+  // Eğer Eymen "clear" yazdıysa, tüm mesajları sil
+  if (username.toLowerCase() === "eymen" && msg.toLowerCase() === "clear") {
+    db.ref("messages").remove(); // Firebase'den sil
+    document.getElementById("messages").innerHTML = ""; // Ekrandan sil
+    document.getElementById("messageInput").value = "";
+    return;
+  }
+
+  // Normal mesaj gönder
   db.ref("messages").push({
     user: username,
     text: msg
   });
+
   document.getElementById("messageInput").value = "";
 }
 
+// Yeni mesaj eklendiğinde göster
 db.ref("messages").on("child_added", (snapshot) => {
   const data = snapshot.val();
   const msgDiv = document.createElement("div");
   msgDiv.textContent = `${data.user}: ${data.text}`;
   document.getElementById("messages").appendChild(msgDiv);
+});
+
+// Mesajlar tamamen silindiğinde ekranı da temizle
+db.ref("messages").on("value", (snapshot) => {
+  if (!snapshot.exists()) {
+    document.getElementById("messages").innerHTML = "";
+  }
 });
