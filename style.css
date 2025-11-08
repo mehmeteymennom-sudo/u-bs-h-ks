@@ -1,69 +1,24 @@
-/* style.css */
 body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background: #f0f2f5;
+  font-family: sans-serif;
+  background: #f2f2f2;
   text-align: center;
   margin-top: 40px;
 }
-
 #messages {
-  background: #fff;
-  border: 1px solid #ccc;
-  height: 400px;
+  background: white;
+  border: 1px solid #ddd;
+  height: 300px;
   width: 80%;
   margin: 10px auto;
   overflow-y: scroll;
   text-align: left;
-  padding: 15px;
-  border-radius: 8px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+  padding: 10px;
 }
-
 input {
   padding: 8px;
   width: 60%;
-  border: 1px solid #ccc;
-  border-radius: 4px;
 }
-
 button {
   padding: 8px 15px;
   margin-left: 5px;
-  border: none;
-  background-color: #007bff;
-  color: white;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background-color 0.2s;
 }
-
-button:hover {
-  background-color: #0056b3;
-}
-
-.message {
-  margin-bottom: 12px;
-  padding: 8px 12px;
-  border-radius: 6px;
-  background-color: #f7f7f7;
-  display: inline-block;
-  max-width: 70%;
-  word-wrap: break-word;
-}
-
-.message .user {
-  font-weight: bold;
-  margin-bottom: 4px;
-  display: block;
-}
-
-.message .text {
-  color: #333;
-}
-
-/* Aynı kullanıcıların mesajlarını aynı renkte göstermek için renk map */
-.user-color-0 { background-color: #ffe4e1; }
-.user-color-1 { background-color: #e0f7fa; }
-.user-color-2 { background-color: #e8f5e9; }
-.user-color-3 { background-color: #fff3e0; }
-.user-color-4 { background-color: #f3e5f5; }
