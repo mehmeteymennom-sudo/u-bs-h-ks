@@ -15,6 +15,10 @@ const db = firebase.database();
 let username = "";
 let currentGroup = "";
 
+// Yasaklı kelimeler ve karakter kuralı
+const yasakli = ["amk", "orospu", "siktir", "fuck", "sex", "porno", "allah", "şeytan"];
+const isimRegex = /^[a-zA-Z0-9_]+$/;
+
 // --- GİRİŞ / KAYIT ---
 function login() {
   const user = document.getElementById("username").value.trim();
@@ -35,6 +39,12 @@ function register() {
   const user = document.getElementById("username").value.trim();
   const pass = document.getElementById("password").value.trim();
   if (!user || !pass) return alert("Tüm alanları doldur!");
+
+  // Kullanıcı adı kuralları
+  if (user.length < 3 || user.length > 15) return alert("Kullanıcı adı 3-15 karakter olmalı!");
+  if (!isimRegex.test(user)) return alert("Kullanıcı adı sadece harf, rakam ve alt çizgi içerebilir!");
+  const kucukUser = user.toLowerCase();
+  if (yasakli.some(kelime => kucukUser.includes(kelime))) return alert("Bu kullanıcı adı uygun değil!");
 
   db.ref("users/" + user).once("value", (snap) => {
     if (snap.exists()) alert("Bu kullanıcı zaten var!");
@@ -63,9 +73,8 @@ function showGroupScreen() {
 function loadGroups() {
   const listDiv = document.getElementById("group-list");
   listDiv.innerHTML = "";
-
   db.ref("groups").once("value", (snap) => {
-    snap.forEach((child) => {
+    snap.forEach(child => {
       const groupName = child.key;
       const members = child.val().members || {};
       if (members[username]) {
@@ -84,15 +93,18 @@ function createGroup() {
   if (!name) return alert("Grup adı gir!");
   if (!memberStr) return alert("Üyeleri gir! (virgülle ayır)");
 
+  // Grup adı kuralları
+  if (name.length < 3 || name.length > 20) return alert("Grup adı 3-20 karakter olmalı!");
+  if (!isimRegex.test(name)) return alert("Grup adı sadece harf, rakam ve alt çizgi içerebilir!");
+  const kucukGroup = name.toLowerCase();
+  if (yasakli.some(kelime => kucukGroup.includes(kelime))) return alert("Bu grup adı uygun değil!");
+
   const membersArray = memberStr.split(",").map(m => m.trim()).filter(Boolean);
   const membersObj = {};
   membersArray.forEach(m => membersObj[m] = true);
   membersObj[username] = true; // kurucu da üye
 
-  db.ref("groups/" + name).set({
-    members: membersObj
-  });
-
+  db.ref("groups/" + name).set({ members: membersObj });
   document.getElementById("newGroupName").value = "";
   document.getElementById("memberNames").value = "";
   alert("Grup oluşturuldu!");
@@ -118,7 +130,7 @@ function sendMessage() {
   const msg = document.getElementById("messageInput").value.trim();
   if (msg === "") return;
 
-  // Eğer Eymen "clear" yazdıysa sadece bu grubun mesajlarını sil
+  // Eğer Eymen "clear" yazarsa sadece bu grubun mesajlarını sil
   if (username.toLowerCase() === "eymen" && msg.toLowerCase() === "clear") {
     db.ref(`groups/${currentGroup}/messages`).remove();
     document.getElementById("messages").innerHTML = "";
@@ -136,22 +148,18 @@ function sendMessage() {
 function loadMessages() {
   const box = document.getElementById("messages");
   box.innerHTML = "";
-
-  db.ref(`groups/${currentGroup}/messages`).on("child_added", (snap) => {
+  db.ref(`groups/${currentGroup}/messages`).on("child_added", snap => {
     const data = snap.val();
     const msgDiv = document.createElement("div");
-
-    // Link kontrolü
     const urlPattern = /(https?:\/\/[^\s]+)/g;
     const match = data.text.match(urlPattern);
     if (match) {
       const link = match[0];
-      msgDiv.innerHTML = `<strong>${data.user}:</strong> ${data.text}
-      <br><button onclick="window.open('${link}', '_blank')">🔗 Aç</button>`;
+      msgDiv.innerHTML = `<strong>${data.user}:</strong> ${data.text}<br>
+        <button onclick="window.open('${link}', '_blank')">🔗 Aç</button>`;
     } else {
       msgDiv.textContent = `${data.user}: ${data.text}`;
     }
-
     box.appendChild(msgDiv);
     box.scrollTop = box.scrollHeight;
   });
