@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <!-- GİRİŞ / KAYIT EKRANI -->
+  <!-- GİRİŞ / KAYIT -->
   <div id="login-screen">
     <h2>Giriş / Kayıt</h2>
     <input id="username" placeholder="Kullanıcı adı" /><br />
@@ -16,16 +16,18 @@
     <button onclick="register()">Kayıt Ol</button>
   </div>
 
-  <!-- GRUP SEÇME EKRANI -->
+  <!-- GRUP SEÇME -->
   <div id="group-screen" style="display:none;">
-    <h2>Grup Seç veya Kur</h2>
+    <h2>Gruplarım</h2>
     <div id="group-list"></div>
-    <input id="newGroupName" placeholder="Yeni grup adı" />
+    <h3>Yeni Grup Kur</h3>
+    <input id="newGroupName" placeholder="Grup adı" /><br />
+    <input id="memberNames" placeholder="Üyeleri yaz (virgülle, örn: ali,ayşe)" /><br />
     <button onclick="createGroup()">Grup Kur</button><br />
     <button onclick="logout()">Çıkış Yap</button>
   </div>
 
-  <!-- SOHBET EKRANI -->
+  <!-- SOHBET -->
   <div id="chat-screen" style="display:none;">
     <h2 id="group-title"></h2>
     <div id="messages"></div>
