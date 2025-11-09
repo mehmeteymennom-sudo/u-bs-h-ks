@@ -28,8 +28,8 @@ function sendMessage() {
 
   // Eğer Eymen "clear" yazdıysa, tüm mesajları sil
   if (username.toLowerCase() === "eymen" && msg.toLowerCase() === "clear") {
-    db.ref("messages").remove(); // Firebase'den sil
-    document.getElementById("messages").innerHTML = ""; // Ekrandan sil
+    db.ref("messages").remove();
+    document.getElementById("messages").innerHTML = "";
     document.getElementById("messageInput").value = "";
     return;
   }
@@ -47,7 +47,16 @@ function sendMessage() {
 db.ref("messages").on("child_added", (snapshot) => {
   const data = snapshot.val();
   const msgDiv = document.createElement("div");
-  msgDiv.textContent = `${data.user}: ${data.text}`;
+
+  // Link içeriyorsa tespit et
+  const urlPattern = /(https?:\/\/[^\s]+)/g;
+  if (urlPattern.test(data.text)) {
+    const link = data.text.match(urlPattern)[0];
+    msgDiv.innerHTML = `${data.user}: ${data.text} <br><button onclick="window.open('${link}', '_blank')">Aç</button>`;
+  } else {
+    msgDiv.textContent = `${data.user}: ${data.text}`;
+  }
+
   document.getElementById("messages").appendChild(msgDiv);
 });
 
