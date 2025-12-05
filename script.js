@@ -11,6 +11,7 @@ const firebaseConfig = {
 
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
+const auth = firebase.auth();
 
 let username = "";
 let currentGroup = "";
@@ -18,6 +19,27 @@ let currentGroup = "";
 // Yasaklı kelimeler ve karakter kuralı
 const yasakli = ["amk", "orospu", "siktir", "fuck", "sex", "porno", "allah", "şeytan"];
 const isimRegex = /^[a-zA-Z0-9_]+$/;
+
+// --- ANONİM GİRİŞ (kurallarda auth != null olduğu için gerekli)
+// Bu sayede istemci "auth" ile istek gönderir ve DB kuralların çalışır.
+// Anonim giriş, gerçek kullanıcı kimlik doğrulamasını değiştirmez; sadece
+// veritabanı isteklerinin reddedilmesini engeller.
+auth.signInAnonymously()
+  .then(() => {
+    console.log("Anonim auth başarılı:", auth.currentUser && auth.currentUser.uid);
+  })
+  .catch(err => {
+    console.error("Anonim auth hatası:", err);
+  });
+
+auth.onAuthStateChanged(user => {
+  if (user) {
+    console.log("Auth state:", user.uid);
+    // istersen burada UI'ya auth durumunu göster
+  } else {
+    console.log("Kullanıcı oturumu yok");
+  }
+});
 
 // --- GİRİŞ / KAYIT ---
 function login() {
